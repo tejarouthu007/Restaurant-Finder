@@ -1,27 +1,51 @@
-[![Review Assignment Due Date](https://classroom.github.com/assets/deadline-readme-button-22041afd0340ce965d47ae6ef1cefeee28c7c493a6346c4f15d667ab976d596c.svg)](https://classroom.github.com/a/UOcNv8Zs)
-# Project Assignment: Zomato Restaurant Listing & Searching
- 
-## Key Use Cases
- 
-### Data Loading
-Create an independent script to load the Zomato restaurant data available [here](https://www.kaggle.com/datasets/shrutimehta/zomato-restaurants-data) into a database.
- 
-### Web API Service
-Develop a web API service with the following endpoints to serve the content loaded in the previous step:
-  - **Get Restaurant by ID**: Retrieve details of a specific restaurant by its ID.
-  - **Get List of Restaurants**: Fetch a list of restaurants with pagination support.
- 
-### User Interface
-Develop a web application with the following pages, which must connect to the web API service:
-  - **Restaurant List Page**: Display a list of restaurants. Clicking on a restaurant should navigate the user to the restaurant's detail page.
-  - **Restaurant Detail Page**: Show details of a specific restaurant.
-  - **Location search**: Search restaurants in given latitude and longitude range (e.g restaurants in 3 km of a given latitude and longitude)
-  - **Image search**: Upload an image of a food like icecream, pasta etc., and search restaurants which offer those cuisines.
+# Zomato Restaurant Listing & Searching
 
-## Additional Use Cases (Optional)
-If time allows, implement the following additional features, ensuring they are supported in both the API and the UI:
-- **Filtering Options**:
-  - By Country
-  - By Average Spend for Two People
-  - By Cuisines
-- **Search Functionality**: Enable search for restaurants by name and description.
+This project allows users to search for restaurants based on location and cuisine, and view the results in a paginated list. The project uses MongoDB for data storage and includes a frontend UI built with React and styled using Tailwind CSS.
+
+## Features
+
+- **Restaurant Listing**: Displays a list of restaurants with pagination.
+- **Search Functionality**: Allows users to filter restaurants by latitude, longitude, and cuisine.
+- **Frontend UI**: Built with React, styled with Tailwind CSS.
+- **Backend**: Uses MongoDB for storing restaurant data and serving API endpoints.
+
+## Project Setup
+
+### 1. Clone the repository:
+
+```bash
+git clone <repository-url> cd <project-directory>
+```
+### 2. Install dependencies:
+
+- **Backend** (API, Express, MongoDB):
+```bash
+```
+cd backend npm install
+
+
+- **Frontend** (React, Tailwind CSS):
+```bash
+cd ../frontend npm install
+```
+
+
+### 3. Environment Variables
+
+Make sure to configure the necessary environment variables for the backend. Create a `.env` file in the `backend` directory and add the following:
+
+```bash
+MONGO_URI=<your-mongodb-uri> PORT=5000
+```
+
+### 4. Start the project
+
+- **Backend**:
+```bash
+cd backend npm start
+```
+
+- **Frontend**:
+```bash
+cd ../frontend npm run dev
+```
