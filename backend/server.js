@@ -10,7 +10,7 @@ const app = express();
 app.use(express.json());
 connectDB();
 
-const allowedOrigins = ['http://localhost:5173']
+const allowedOrigins = ['http://localhost:5173','https://restaurant-finder-tl1g.onrender.com']
 app.use(cors({origin: allowedOrigins, credentials: true}));
 
 app.get('/',(req, res)=> res.send("api working"));
