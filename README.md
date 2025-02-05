@@ -11,7 +11,7 @@ This project allows users to search for restaurants based on location and cuisin
 
 ## Live Demo
 
-Check out the live site here: [Zomato Restaurant Listing & Searching]([https://your-site-name.onrender.com](https://restaurant-finder-tl1g.onrender.com/))
+Check out the live site here: [Zomato Restaurant Listing & Searching](https://restaurant-finder-tl1g.onrender.com/)
 
 ## Project Setup
 
