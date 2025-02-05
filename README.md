@@ -20,8 +20,8 @@ git clone <repository-url> cd <project-directory>
 
 - **Backend** (API, Express, MongoDB):
 ```bash
-```
 cd backend npm install
+```
 
 
 - **Frontend** (React, Tailwind CSS):
