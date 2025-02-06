@@ -1,7 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "axios";
 import RestaurantList from "../components/RestaurantList";
-
 
 const capitalizeCuisine = (cuisine) => {
     return cuisine
@@ -11,31 +10,61 @@ const capitalizeCuisine = (cuisine) => {
 };
 
 const SearchRestaurants = () => {
-    const [lat, setLat] = useState("");
-    const [long, setLong] = useState("");
     const [cuisines, setCuisines] = useState("");
     const [restaurants, setRestaurants] = useState([]);
     const [loading, setLoading] = useState(false);
+    const [page, setPage] = useState(1);
+    const [totalPages, setTotalPages] = useState(1);
     const [error, setError] = useState(null);
+    const [userLocation, setUserLocation] = useState(null);
+    const [searched, setSearched] = useState(false);
+
     const backendUrl = import.meta.env.VITE_BACKEND_URL;
 
-    const handleSearch = async (e) => {
-        e.preventDefault();
+    // Detect user location when the component mounts
+    useEffect(() => {
+        if ("geolocation" in navigator) {
+            navigator.geolocation.getCurrentPosition(
+                (position) => {
+                    setUserLocation({
+                        lat: position.coords.latitude,
+                        long: position.coords.longitude
+                    });
+                },
+                () => {
+                    console.warn("Geolocation permission denied. Searching by cuisine only.");
+                    setUserLocation(null); // Fallback to cuisine search
+                }
+            );
+        }
+    }, []);
+
+    useEffect(() => {
+        // If searched, fetch restaurants whenever page changes
+        if (searched) {
+            handleSearch();
+        }
+    }, [page, searched]);
+
+    const handleSearch = async () => {
         setLoading(true);
         setError(null);
+
         try {
             const formattedCuisines = cuisines
                 .split(",")
                 .map((cuisine) => capitalizeCuisine(cuisine.trim()));
 
-            const res = await axios.post(`${backendUrl}/api/restaurants-by-location`, {
-                lat: parseFloat(lat),
-                long: parseFloat(long),
-                cuisines: formattedCuisines, 
-            });
+            const requestData = userLocation
+                ? { lat: userLocation.lat, long: userLocation.long, cuisines: formattedCuisines, page }
+                : { lat: null, long: null, cuisines: formattedCuisines, page };
 
+            const res = await axios.post(`${backendUrl}/api/restaurants-by-location`, requestData);
             setRestaurants(res.data.restaurants);
+            setTotalPages(res.data.totalPages); // Assuming the response includes totalPages
+            setSearched(true);
         } catch (error) {
+            console.log(error.message);
             setError("Failed to fetch restaurants. Please try again.");
         } finally {
             setLoading(false);
@@ -45,52 +74,65 @@ const SearchRestaurants = () => {
     return (
         <div className="container mx-auto p-6">
             <h1 className="text-3xl font-bold text-center mb-6">Search Restaurants</h1>
-            <form onSubmit={handleSearch} className="max-w-lg mx-auto bg-white shadow-md rounded-lg p-6">
-                <div className="mb-4">
-                    <label className="block text-gray-700">Latitude</label>
-                    <input
-                        type="number"
-                        placeholder="Latitude"
-                        value={lat}
-                        onChange={(e) => setLat(e.target.value)}
-                        required
-                        className="w-full p-2 border rounded"
-                    />
-                </div>
-                <div className="mb-4">
-                    <label className="block text-gray-700">Longitude</label>
-                    <input
-                        type="number"
-                        placeholder="Longitude"
-                        value={long}
-                        onChange={(e) => setLong(e.target.value)}
-                        required
-                        className="w-full p-2 border rounded"
-                    />
-                </div>
+
+            {error && <div className="text-center text-red-500">{error}</div>}
+
+            <form
+                onSubmit={(e) => {
+                    e.preventDefault();
+                    setPage(1); // Reset to first page on new search
+                    setSearched(false);
+                    handleSearch();
+                }}
+                className="max-w-lg mx-auto bg-white shadow-md rounded-lg p-6"
+            >
                 <div className="mb-4">
                     <label className="block text-gray-700">Cuisines (comma-separated)</label>
                     <input
                         type="text"
                         placeholder="Cuisines"
+                        required={!userLocation}
                         value={cuisines}
                         onChange={(e) => setCuisines(e.target.value)}
                         className="w-full p-2 border rounded"
                     />
                 </div>
-                <button 
-                    type="submit" 
-                    disabled={loading} 
+                <button
+                    type="submit"
+                    disabled={loading}
                     className="w-full bg-blue-500 text-white py-2 rounded"
                 >
                     {loading ? "Searching..." : "Search"}
                 </button>
             </form>
 
-            {error && <div className="text-center text-xl text-red-500 mt-4">{error}</div>}
-
             {restaurants.length > 0 && <RestaurantList restaurants={restaurants} />}
-            {restaurants.length === 0 && !loading && <p className="text-center text-gray-600 mt-4">No restaurants found.</p>}
+            {restaurants.length === 0 && !loading && (
+                <p className="text-center text-gray-600 mt-4">No restaurants found.</p>
+            )}
+
+            {/* Pagination Controls */}
+            {searched && (
+                <div className="flex justify-center mt-6 space-x-4">
+                    <button
+                        disabled={page === 1}
+                        onClick={() => setPage(page - 1)}
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-500 disabled:opacity-50"
+                    >
+                        Previous
+                    </button>
+                    <span className="text-lg text-gray-700">
+                        Page {page} of {totalPages}
+                    </span>
+                    <button
+                        disabled={page === totalPages}
+                        onClick={() => setPage(page + 1)}
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg shadow-md hover:bg-blue-500 disabled:opacity-50"
+                    >
+                        Next
+                    </button>
+                </div>
+            )}
         </div>
     );
 };

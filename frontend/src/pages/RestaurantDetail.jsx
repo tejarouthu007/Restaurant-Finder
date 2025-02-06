@@ -28,31 +28,31 @@ const RestaurantDetail = () => {
         getRestaurant();
     }, [id, backendurl]);
 
-    if (loading) return <div className="text-center p-2 text-sm">Loading...</div>;
-    if (error) return <div className="text-center text-red-500 p-2 text-sm">{error}</div>;
+    if (loading) return <div className="text-center p-2 text-base">Loading...</div>;
+    if (error) return <div className="text-center text-red-500 p-2 text-base">{error}</div>;
 
     return (
         restaurant && (
             <div className="flex justify-center items-center min-h-screen bg-gray-100 p-4">
                 {/* Centered Restaurant Detail Card */}
                 <div className="w-full max-w-4xl bg-white shadow-lg rounded-lg overflow-hidden">
-                    <div className="p-4">
+                    <div className="p-6">
                         {/* Restaurant Image */}
                         <img
                             src={restaurant["featured_image"] || defaultImage}
                             alt={restaurant["Restaurant Name"]}
-                            className="w-full h-48 object-cover rounded-md mb-4"
+                            className="w-full h-60 object-cover rounded-md mb-6"
                         />
 
                         {/* Restaurant Name and Menu Link */}
-                        <div className="flex items-center justify-between mb-3">
-                            <h1 className="text-3xl font-bold text-retroOrange">{restaurant["Restaurant Name"]}</h1>
+                        <div className="flex items-center justify-between mb-4">
+                            <h1 className="text-4xl font-bold text-retroOrange">{restaurant["Restaurant Name"]}</h1>
                             {restaurant["menu_url"] && (
                                 <a
                                     href={restaurant["menu_url"]}
                                     target="_blank"
                                     rel="noopener noreferrer"
-                                    className="text-sm text-blue-500 hover:underline"
+                                    className="text-lg text-blue-500 hover:underline"
                                 >
                                     Menu
                                 </a>
@@ -60,40 +60,40 @@ const RestaurantDetail = () => {
                         </div>
 
                         {/* Cuisines */}
-                        <p className="text-sm text-gray-700 mb-3">{restaurant["Cuisines"]}</p>
+                        <p className="text-lg text-gray-700 mb-4">{restaurant["Cuisines"]}</p>
 
                         {/* Rating */}
-                        <div className="flex items-center space-x-1 mb-3 text-sm">
-                            <span className="text-yellow-500 text-lg">⭐</span>
+                        <div className="flex items-center space-x-2 mb-4 text-lg">
+                            <span className="text-yellow-500 text-xl">⭐</span>
                             <p className="text-gray-700">
                                 {restaurant["Aggregate rating"]} ({restaurant["Rating text"]})
                             </p>
                         </div>
 
                         {/* Address */}
-                        <div className="bg-gray-100 p-2 rounded-md mb-3">
-                            <h3 className="text-sm font-semibold text-gray-700">Address</h3>
-                            <p className="text-sm text-gray-600">{restaurant["Address"]}</p>
+                        <div className="bg-gray-100 p-4 rounded-md mb-4">
+                            <h3 className="text-lg font-semibold text-gray-700">Address</h3>
+                            <p className="text-lg text-gray-600">{restaurant["Address"]}</p>
                         </div>
 
                         {/* Location */}
-                        <div className="bg-gray-100 p-2 rounded-md mb-3">
-                            <h3 className="text-sm font-semibold text-gray-700">Location</h3>
-                            <p className="text-sm text-gray-600">
+                        <div className="bg-gray-100 p-4 rounded-md mb-4">
+                            <h3 className="text-lg font-semibold text-gray-700">Location</h3>
+                            <p className="text-lg text-gray-600">
                                 {restaurant["City"]}, {restaurant["Country Code"]}
                             </p>
                         </div>
 
                         {/* Always Visible Additional Info */}
-                        <div className="bg-gray-100 p-2 rounded-md mb-3">
-                            <h3 className="text-sm font-semibold text-gray-700">Additional Info</h3>
-                            <p className="text-sm text-gray-600">
+                        <div className="bg-gray-100 p-4 rounded-md mb-4">
+                            <h3 className="text-lg font-semibold text-gray-700">Additional Info</h3>
+                            <p className="text-lg text-gray-600">
                                 Average Cost for Two: {restaurant["Average Cost for two"]} {restaurant["Currency"]}
                             </p>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-lg text-gray-600">
                                 Table Booking: {restaurant["Has Table booking"] ? "Yes" : "No"}
                             </p>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-lg text-gray-600">
                                 Online Delivery: {restaurant["Has Online delivery"] ? "Yes" : "No"}
                             </p>
                         </div>
