@@ -39,43 +39,98 @@ export const getRestaurants = async(req,res) => {
     }
 }
 
-export const getRestaurantsByLocation = async (req, res) => {
+export const getRestaurantsByDetails = async (req, res) => {
     try {
-        const { lat, long, cuisines } = req.body;
+        const { lat, long, cuisines, page = 1, limit = 12 } = req.body;
+        const skip = (page - 1) * limit;
 
-        const matchStage = cuisines && cuisines.length > 0 ? {
-            $addFields: {
-                "matchCount": {
-                    $size: {
-                        $setIntersection: [{$split: ["$Cuisines", ", "]}, cuisines]
-                    }
-                }
-            }
-        } : {};
+        let pipeline = [];
+        // To count total matching documents
+        let countPipeline = [...pipeline];
 
-        const restaurants = await Restaurant.aggregate([
-            {
+        if (lat && long) {
+            pipeline.push({
                 $geoNear: {
-                    near: { type: "Point", coordinates: [lat, long] },
+                    near: { type: "Point", coordinates: [parseFloat(long), parseFloat(lat)] },
                     distanceField: "distance",
                     maxDistance: 10000,
                     spherical: true
                 }
-            },
-            matchStage, 
-            // { $match: { matchCount: { $gt: 0 } } },
-            { $sort: { matchCount: -1 } }
-        ]);
+            });
+        }
 
-        
-        const totalRestaurants = restaurants.length;
+        if (cuisines && cuisines.length > 0) {
+            pipeline.push(
+                {
+                    $addFields: {
+                        matchCount: {
+                            $size: {
+                                $setIntersection: [
+                                    { 
+                                        $split: [
+                                            { $convert: { input: "$Cuisines", to: "string", onError: "", onNull: "" } },
+                                            ", "
+                                        ]
+                                    },
+                                    cuisines
+                                ]
+                            }
+                        }
+                    }
+                },
+                { $sort: { matchCount: -1 } }, 
+                { $skip: skip },
+                { $limit: limit }
+            );
+        }
+
+        if (lat && long) {
+            countPipeline.push({
+                $geoNear: {
+                    near: { type: "Point", coordinates: [parseFloat(long), parseFloat(lat)] },
+                    distanceField: "distance",
+                    maxDistance: 10000,
+                    spherical: true
+                }
+            });
+        }
+
+        if (cuisines && cuisines.length > 0) {
+            countPipeline.push(
+                {
+                    $addFields: {
+                        matchCount: {
+                            $size: {
+                                $setIntersection: [
+                                    { 
+                                        $split: [
+                                            { $convert: { input: "$Cuisines", to: "string", onError: "", onNull: "" } }, 
+                                            ", "
+                                        ]
+                                    },
+                                    cuisines
+                                ]
+                            }
+                        }
+                    }
+                }
+            );
+        }
+
+
+        const totalCount = await Restaurant.aggregate(countPipeline);
+
+        const restaurants = await Restaurant.aggregate(pipeline);
+
+        const totalPages = Math.ceil(totalCount.length / limit);
 
         res.status(200).json({
-            totalRestaurants,
+            totalPages,
+            totalRestaurants: totalCount.length,
             restaurants
         });
     } catch (err) {
-        console.log(err);
-        res.status(500).json({ message: err.message });
+        console.error("Error fetching restaurants:", err);
+        res.status(500).json({ message: "Internal server error" });
     }
 };
