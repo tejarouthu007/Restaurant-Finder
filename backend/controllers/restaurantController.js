@@ -1,4 +1,7 @@
+import fs from "fs";
+import { GoogleGenerativeAI } from "@google/generative-ai";
 import Restaurant from "../models/restaurant.js";
+import cuisineList from "../constants/cuisineList.js"
 
 export const getRestaurantById = async(req,res) => {
     try {
@@ -132,5 +135,58 @@ export const getRestaurantsByDetails = async (req, res) => {
     } catch (err) {
         console.error("Error fetching restaurants:", err);
         res.status(500).json({ message: "Internal server error" });
+    }
+};
+
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY);
+
+export const detectCuisineFromImage = async (req, res) => {
+    const file = req.file;
+    if (!file) return res.status(400).json({ error: "No image uploaded" });
+
+    const imagePath = file.path;
+
+    try {
+        const imageBuffer = fs.readFileSync(imagePath);
+        const base64Image = imageBuffer.toString("base64");
+
+        const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+
+        const prompt = `You are a classifier. Given the image of food, return ONE WORD ONLY — the most likely cuisine from this list: ${cuisineList.join(", ")}. Your response must be exactly one word and match one from the list. No extra text.`;
+
+        const result = await model.generateContent({
+            contents: [
+                {
+                    parts: [
+                        { text: prompt },
+                        {
+                            inlineData: {
+                                data: base64Image,
+                                mimeType: file.mimetype,
+                            },
+                        },
+                    ],
+                },
+            ],
+        });
+
+        const responseText = result.response.text().trim();
+        const detectedCuisine = cuisineList.find(
+            (c) => responseText.toLowerCase() === c.toLowerCase()
+        );
+
+        if (!detectedCuisine) {
+            return res.status(400).json({ error: "Cuisine could not be confidently detected" });
+        }
+
+        return res.status(200).json({ cuisine: detectedCuisine });
+
+    } catch (err) {
+        console.error("Cuisine detection error:", err);
+        return res.status(500).json({ error: "Failed to detect cuisine" });
+    } finally {
+        fs.unlink(imagePath, (err) => {
+            if (err) console.warn("Could not delete uploaded image:", err);
+        });
     }
 };
